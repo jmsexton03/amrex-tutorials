@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
         }
         else // the second program
         {
-	    MPI_Recv(&other_nboxes, 1, MPI_INT, other_root, 0, MPI_COMM_WORLD,
+            MPI_Recv(&other_nboxes, 1, MPI_INT, other_root, 0, MPI_COMM_WORLD,
                      MPI_STATUS_IGNORE);
             MPI_Send(&this_nboxes, 1, MPI_INT, other_root, 1, MPI_COMM_WORLD);
         }
