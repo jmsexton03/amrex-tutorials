@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     std::cout<<"My rank is "<<amrex::MPMD::MyProc()<<" out of "<<amrex::MPMD::NProcs()<<" total ranks in MPI_COMM_WORLD communicator "<<MPI_COMM_WORLD<< "and my rank is "<<amrex::ParallelDescriptor::MyProc()<<" out of "<<amrex::ParallelDescriptor::NProcs()<<" total ranks in my part of the split communicator for the appnum (color) "<< amrex::MPMD::AppNum()<<std::endl;
     int this_nboxes = 2; // setting this arbitrarily
     int other_nboxes = this_nboxes;
-
+#if 0
     // BOTH SEND AND RECV
     if (amrex::MPMD::MyProc() == this_root) {
         if (rank_offset == 0) // the first program
@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
     }
 
     amrex::Print()<<"Recieved other_nboxes as "<<other_nboxes<<" recieving again"<<std::endl;
+#endif
     //JUST RECV
     if (amrex::MPMD::MyProc() == this_root) {
         if (rank_offset == 0) // the first program
@@ -55,7 +56,9 @@ int main(int argc, char* argv[])
             MPI_Recv(&other_nboxes, 1, MPI_INT, other_root, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
     }
-    this_nboxes*=2;
+    amrex::Print()<<"Recieved other_nboxes as "<<other_nboxes<<std::endl;
+#if 0
+    txhis_nboxes*=2;
     amrex::Print()<<"Recieved other_nboxes as "<<other_nboxes<<" sending again after this_nboxes*=2=\t"<<this_nboxes<<std::endl;
     // JUST SEND
     if (amrex::MPMD::MyProc() == this_root) {
@@ -68,7 +71,8 @@ int main(int argc, char* argv[])
             MPI_Send(&this_nboxes, 1, MPI_INT, other_root, 1, MPI_COMM_WORLD);
         }
     }
-
+#endif
+    //    MPI_Barrier(MPI_COMM_WORLD);
     }
     amrex::Finalize();
     amrex::MPMD::Finalize();
