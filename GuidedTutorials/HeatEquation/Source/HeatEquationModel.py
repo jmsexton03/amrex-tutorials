@@ -178,7 +178,7 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
 class HeatEquationModel:
     """Simple wrapper to make heat equation callable with parameter arrays."""
     
-    def __init__(self, n_cell=32, max_grid_size=16, nsteps=1000, dt=1e-5):
+    def __init__(self, n_cell=32, max_grid_size=16, nsteps=1000, plot_int=100, dt=1e-5):
         self.n_cell = n_cell
         self.max_grid_size = max_grid_size
         self.nsteps = nsteps
@@ -218,6 +218,51 @@ class HeatEquationModel:
                 plot_int=self.plot_int,
                 dt=self.dt
             )
+        
+        return outputs
+
+class IshigamiSimple:
+    """Simple wrapper to make heat equation callable with parameter arrays."""
+    
+    def __init__(self, n_cell=32, max_grid_size=16, nsteps=1000, plot_int=100, dt=1e-5):
+        self.n_cell = n_cell
+        self.max_grid_size = max_grid_size
+        self.nsteps = nsteps
+        self.plot_int = 100
+        self.dt = dt
+    
+    def __call__(self, params):
+        """
+        Run heat equation for each parameter set.
+        
+        Parameters:
+        -----------
+        params : numpy.ndarray of shape (n_samples, 3)
+            params[:, 0] = diffusion coefficient
+            params[:, 1] = initial condition amplitude  
+            params[:, 2] = initial condition width
+            
+        Returns:
+        --------
+        numpy.ndarray of shape (n_samples, 5)
+            [max, mean, std, integral, center] for each sample
+        """
+        if params.ndim == 1:
+            params = params.reshape(1, -1)
+        
+        n_samples = params.shape[0]
+        outputs = np.zeros((n_samples, 5))
+        
+        for i in range(n_samples):
+            x1 = params[i, 0]
+            x2 = params[i, 1]
+            x3 = params[i, 2]
+
+            outputs[i, 0] = np.exp(x1)
+            outputs[i, 1] = x3 * np.log(x1**2) + x1 + (x2**2) * (1 - np.exp(-x3**2))
+            outputs[i, 2] = x1 + x3**2
+            outputs[i, 3] = x2 + x3
+            outputs[i, 4] = x1 * x3
         
         return outputs
 
