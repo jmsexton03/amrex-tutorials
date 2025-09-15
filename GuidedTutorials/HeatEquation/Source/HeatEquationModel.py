@@ -32,7 +32,7 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
                       n_cell=32, max_grid_size=16, nsteps=100, plot_int=100, dt=1e-5):
     """
     Run heat equation with given parameters and return final state metrics.
-    
+
     Returns: [max_value, mean_value, std_dev, total_heat, center_value]
     """
     plot_files_output = False
@@ -97,11 +97,11 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
         bx = mfi.validbox()
         # phiOld is indexed in reversed order (z,y,x) and indices are local
         phiOld = xp.array(phi_old.array(mfi), copy=False)
-        
+
         x = (xp.arange(bx.small_end[0], bx.big_end[0]+1, 1) + 0.5) * dx[0]
         y = (xp.arange(bx.small_end[1], bx.big_end[1]+1, 1) + 0.5) * dx[1]
         z = (xp.arange(bx.small_end[2], bx.big_end[2]+1, 1) + 0.5) * dx[2]
-        
+
         rsquared = ((z[:, xp.newaxis, xp.newaxis] - 0.5)**2
                   + (y[xp.newaxis, :, xp.newaxis] - 0.5)**2
                   + (x[xp.newaxis, xp.newaxis, :] - 0.5)**2) / init_width
@@ -126,11 +126,11 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
             hix = phiOld.shape[3]
             hiy = phiOld.shape[2]
             hiz = phiOld.shape[1]
-            
+
             # Heat equation with parameterized diffusion
             # Advance the data by dt
             phiNew[:, ngz:-ngz,ngy:-ngy,ngx:-ngx] = (
-                phiOld[:, ngz:-ngz,ngy:-ngy,ngx:-ngx] + dt * diffusion_coeff * 
+                phiOld[:, ngz:-ngz,ngy:-ngy,ngx:-ngx] + dt * diffusion_coeff *
                      ((   phiOld[:, ngz  :-ngz     , ngy  :-ngy     , ngx+1:hix-ngx+1]
                        -2*phiOld[:, ngz  :-ngz     , ngy  :-ngy     , ngx  :-ngx     ]
                          +phiOld[:, ngz  :-ngz     , ngy  :-ngy     , ngx-1:hix-ngx-1]) / dx[0]**2
@@ -163,12 +163,12 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
         if xp.__name__ == 'cupy':
             valid_data = valid_data.get()
         all_data.append(valid_data.flatten())
-    
+
     all_data = np.concatenate(all_data)
-    
+
     return np.array([
         np.max(all_data),                              # max value
-        np.mean(all_data),                             # mean value  
+        np.mean(all_data),                             # mean value
         np.std(all_data),                              # std dev
         np.sum(all_data) * dx[0] * dx[1] * dx[2],     # integral
         all_data[len(all_data)//2]                    # center value (approximate)
@@ -177,25 +177,25 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
 
 class HeatEquationModel:
     """Simple wrapper to make heat equation callable with parameter arrays."""
-    
+
     def __init__(self, n_cell=32, max_grid_size=16, nsteps=1000, plot_int=100, dt=1e-5):
         self.n_cell = n_cell
         self.max_grid_size = max_grid_size
         self.nsteps = nsteps
         self.plot_int = 100
         self.dt = dt
-    
+
     def __call__(self, params):
         """
         Run heat equation for each parameter set.
-        
+
         Parameters:
         -----------
         params : numpy.ndarray of shape (n_samples, 3)
             params[:, 0] = diffusion coefficient
-            params[:, 1] = initial condition amplitude  
+            params[:, 1] = initial condition amplitude
             params[:, 2] = initial condition width
-            
+
         Returns:
         --------
         numpy.ndarray of shape (n_samples, 5)
@@ -203,10 +203,10 @@ class HeatEquationModel:
         """
         if params.ndim == 1:
             params = params.reshape(1, -1)
-        
+
         n_samples = params.shape[0]
         outputs = np.zeros((n_samples, 5))
-        
+
         for i in range(n_samples):
             outputs[i, :] = heat_equation_run(
                 diffusion_coeff=params[i, 0],
@@ -218,30 +218,30 @@ class HeatEquationModel:
                 plot_int=self.plot_int,
                 dt=self.dt
             )
-        
+
         return outputs
 
 class IshigamiSimple:
     """Simple wrapper to make heat equation callable with parameter arrays."""
-    
+
     def __init__(self, n_cell=32, max_grid_size=16, nsteps=1000, plot_int=100, dt=1e-5):
         self.n_cell = n_cell
         self.max_grid_size = max_grid_size
         self.nsteps = nsteps
         self.plot_int = 100
         self.dt = dt
-    
+
     def __call__(self, params):
         """
         Run heat equation for each parameter set.
-        
+
         Parameters:
         -----------
         params : numpy.ndarray of shape (n_samples, 3)
             params[:, 0] = diffusion coefficient
-            params[:, 1] = initial condition amplitude  
+            params[:, 1] = initial condition amplitude
             params[:, 2] = initial condition width
-            
+
         Returns:
         --------
         numpy.ndarray of shape (n_samples, 5)
@@ -249,10 +249,10 @@ class IshigamiSimple:
         """
         if params.ndim == 1:
             params = params.reshape(1, -1)
-        
+
         n_samples = params.shape[0]
         outputs = np.zeros((n_samples, 5))
-        
+
         for i in range(n_samples):
             x1 = params[i, 0]
             x2 = params[i, 1]
@@ -263,7 +263,7 @@ class IshigamiSimple:
             outputs[i, 2] = x1 + x3**2
             outputs[i, 3] = x2 + x3
             outputs[i, 4] = x1 * x3
-        
+
         return outputs
 
 if __name__ == "__main__":
@@ -273,20 +273,20 @@ if __name__ == "__main__":
 
     # Example usage
     model = HeatEquationModel(n_cell=32, nsteps=100)
-    
+
     # Test with random parameters
     test_params = np.array([
         [1.0, 1.0, 0.01],   # baseline
         [2.0, 1.5, 0.02],   # higher diffusion, higher amplitude
         [0.5, 2.0, 0.005]   # lower diffusion, higher amplitude, narrower
     ])
-    
+
     print("Running heat equation with parameters:")
     print("  [diffusion, amplitude, width]")
     print(test_params)
-    
+
     outputs = model(test_params)
-    
+
     print("\nResults [max, mean, std, integral, center]:")
     print(outputs)
 
