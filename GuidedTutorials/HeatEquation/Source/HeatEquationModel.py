@@ -221,31 +221,23 @@ class HeatEquationModel:
 
         return outputs
 
-class IshigamiSimple:
-    """Simple wrapper to make heat equation callable with parameter arrays."""
-
-    def __init__(self, n_cell=32, max_grid_size=16, nsteps=1000, plot_int=100, dt=1e-5):
-        self.n_cell = n_cell
-        self.max_grid_size = max_grid_size
-        self.nsteps = nsteps
-        self.plot_int = 100
-        self.dt = dt
+class IshigamiSurrogate:
+    """Black box model that might be a surrogate for Ishigami."""
 
     def __call__(self, params):
         """
-        Run heat equation for each parameter set.
+        Run equations for each parameter set.
 
         Parameters:
         -----------
         params : numpy.ndarray of shape (n_samples, 3)
-            params[:, 0] = diffusion coefficient
-            params[:, 1] = initial condition amplitude
-            params[:, 2] = initial condition width
+            params[:, 0] = x1
+            params[:, 1] = x2
+            params[:, 2] = x3
 
         Returns:
         --------
-        numpy.ndarray of shape (n_samples, 5)
-            [max, mean, std, integral, center] for each sample
+        numpy.ndarray of shape (n_samples, 5) for each sample
         """
         if params.ndim == 1:
             params = params.reshape(1, -1)
