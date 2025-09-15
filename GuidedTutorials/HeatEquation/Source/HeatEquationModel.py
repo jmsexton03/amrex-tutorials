@@ -185,6 +185,10 @@ class HeatEquationModel:
         self.plot_int = 100
         self.dt = dt
 
+        # Conditionally initialize AMReX
+        if not amr.initialized():
+            amr.initialize([])
+
     def __call__(self, params):
         """
         Run heat equation for each parameter set.
