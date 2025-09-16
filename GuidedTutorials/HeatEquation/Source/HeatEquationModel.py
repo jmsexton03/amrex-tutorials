@@ -156,16 +156,55 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
             amr.write_single_level_plotfile(pltfile, phi_new, varnames, geom, time, step)
 
     # Compute output metrics from final state
-    all_data = []
+
+    # Find center value at (0.5, 0.5, 0.5)
+    center_x, center_y, center_z = 0.5, 0.5, 0.5
+
+    # Convert physical coordinates to global cell indices
+    i_center = int(center_x / dx[0] - 0.5)
+    j_center = int(center_y / dx[1] - 0.5)
+    k_center = int(center_z / dx[2] - 0.5)
+
+    center_val = None
     for mfi in phi_new:
-        phi_arr = xp.array(phi_new.array(mfi), copy=False)
-        valid_data = phi_arr[:, ngz:-ngz, ngy:-ngy, ngx:-ngx]
-        if xp.__name__ == 'cupy':
-            valid_data = valid_data.get()
-        all_data.append(valid_data.flatten())
+        bx = mfi.validbox()
 
-    all_data = np.concatenate(all_data)
+        # Check if this box contains the center point
+        if bx.contains([i_center, j_center, k_center]):
+            phi_arr = xp.array(phi_new.array(mfi), copy=False)
 
+            # Convert global indices to local array indices
+            local_i = i_center - bx.small_end[0] + ngx
+            local_j = j_center - bx.small_end[1] + ngy
+            local_k = k_center - bx.small_end[2] + ngz
+
+            # Extract center value (array indexed as [z,y,x])
+            center_val = float(phi_arr[0, local_k, local_j, local_i])
+            if xp.__name__ == 'cupy':
+                center_val = float(center_val)
+                break
+
+        if center_val is None:
+            center_val = 0.0
+
+    # Compute output metrics from final state using PyAMReX built-ins
+    max_val = phi_new.max(nghost=0)  # exclude ghost zones
+    mean_val = phi_new.sum(nghost=0) / phi_new.box_array().numPts()
+    sum_val = phi_new.sum(nghost=0)
+    integral = sum_val * dx[0] * dx[1] * dx[2]
+
+    # For standard deviation, you'll need to compute it in two steps
+    sum_sq = phi_new.dot(phi_new, nghost=0)  # sum of squares
+    variance = (sum_sq / phi_new.box_array().numPts()) - mean_val**2
+    std_val = np.sqrt(max(0, variance))  # max(0, ...) handles potential numerical issues
+
+    return np.array([
+        max_val,
+        mean_val,
+        std_val,
+        integral,
+        center_val
+])
     return np.array([
         np.max(all_data),                              # max value
         np.mean(all_data),                             # mean value
