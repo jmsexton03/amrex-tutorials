@@ -169,8 +169,11 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
     for mfi in phi_new:
         bx = mfi.validbox()
 
+        # Create IntVect3D for the center point
+        center_iv = amr.IntVect3D(i_center, j_center, k_center)
+
         # Check if this box contains the center point
-        if bx.contains([i_center, j_center, k_center]):
+        if bx.contains(center_iv):
             phi_arr = xp.array(phi_new.array(mfi), copy=False)
 
             # Convert global indices to local array indices
@@ -188,15 +191,20 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
             center_val = 0.0
 
     # Compute output metrics from final state using PyAMReX built-ins
-    max_val = phi_new.max(nghost=0)  # exclude ghost zones
-    mean_val = phi_new.sum(nghost=0) / phi_new.box_array().numPts()
-    sum_val = phi_new.sum(nghost=0)
-    integral = sum_val * dx[0] * dx[1] * dx[2]
+    max_val = phi_new.max(comp=0, local=False)
+    sum_val = phi_new.sum(comp=0, local=False)
 
-    # For standard deviation, you'll need to compute it in two steps
-    sum_sq = phi_new.dot(phi_new, nghost=0)  # sum of squares
-    variance = (sum_sq / phi_new.box_array().numPts()) - mean_val**2
-    std_val = np.sqrt(max(0, variance))  # max(0, ...) handles potential numerical issues
+    # Get total number of valid cells (excluding ghost zones)
+    total_cells = phi_new.box_array().numPts
+    mean_val = sum_val / total_cells
+
+    # Use L2 norm for standard deviation calculation
+    l2_norm = phi_new.norm2(0)
+    sum_sq = l2_norm**2
+    variance = (sum_sq / total_cells) - mean_val**2
+    std_val = np.sqrt(max(0, variance))
+
+    integral = sum_val * dx[0] * dx[1] * dx[2]
 
     return np.array([
         max_val,
@@ -204,15 +212,7 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
         std_val,
         integral,
         center_val
-])
-    return np.array([
-        np.max(all_data),                              # max value
-        np.mean(all_data),                             # mean value
-        np.std(all_data),                              # std dev
-        np.sum(all_data) * dx[0] * dx[1] * dx[2],     # integral
-        all_data[len(all_data)//2]                    # center value (approximate)
     ])
-
 
 class HeatEquationModel:
     """Simple wrapper to make heat equation callable with parameter arrays."""
