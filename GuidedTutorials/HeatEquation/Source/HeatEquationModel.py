@@ -214,19 +214,80 @@ def heat_equation_run(diffusion_coeff=1.0, init_amplitude=1.0, init_width=0.01,
         center_val
     ])
 
+
+def parse_inputs():
+    """Parse inputs using AMReX ParmParse interface."""
+    pp = amr.ParmParse("")
+
+    # Add inputs file if it exists
+    import os
+    inputs_file = "inputs"
+    if os.path.exists(inputs_file):
+        pp.addfile(inputs_file)
+
+    # Read simulation parameters with defaults
+    n_cell = 32
+    pp.query("n_cell", n_cell)
+
+    max_grid_size = 16
+    pp.query("max_grid_size", max_grid_size)
+
+    nsteps = 1000
+    pp.query("nsteps", nsteps)
+
+    plot_int = 100
+    pp.query("plot_int", plot_int)
+
+    dt = 1.0e-5
+    pp.query("dt", dt)
+
+    # Read heat equation model parameters with defaults
+    diffusion_coeff = 1.0
+    pp.query("diffusion_coeff", diffusion_coeff)
+
+    init_amplitude = 1.0
+    pp.query("init_amplitude", init_amplitude)
+
+    init_width = 0.01
+    pp.query("init_width", init_width)
+
+    return {
+        'n_cell': n_cell,
+        'max_grid_size': max_grid_size,
+        'nsteps': nsteps,
+        'plot_int': plot_int,
+        'dt': dt,
+        'diffusion_coeff': diffusion_coeff,
+        'init_amplitude': init_amplitude,
+        'init_width': init_width
+    }
+
 class HeatEquationModel:
     """Simple wrapper to make heat equation callable with parameter arrays."""
 
-    def __init__(self, n_cell=32, max_grid_size=16, nsteps=1000, plot_int=100, dt=1e-5):
-        self.n_cell = n_cell
-        self.max_grid_size = max_grid_size
-        self.nsteps = nsteps
-        self.plot_int = 100
-        self.dt = dt
+    def __init__(self, n_cell=32, max_grid_size=16, nsteps=1000, plot_int=100, dt=1e-5, use_parmparse=False):
+        if use_parmparse:
+            # Conditionally initialize AMReX first if using ParmParse
+            if not amr.initialized():
+                amr.initialize([])
 
-        # Conditionally initialize AMReX
-        if not amr.initialized():
-            amr.initialize([])
+            # Parse inputs from file
+            params = parse_inputs()
+            self.n_cell = params['n_cell']
+            self.max_grid_size = params['max_grid_size']
+            self.nsteps = params['nsteps']
+            self.plot_int = params['plot_int']
+            self.dt = params['dt']
+        else:
+            self.n_cell = n_cell
+            self.max_grid_size = max_grid_size
+            self.nsteps = nsteps
+            self.plot_int = plot_int
+            self.dt = dt
+
+            # Conditionally initialize AMReX
+            if not amr.initialized():
+                amr.initialize([])
 
     def __call__(self, params):
         """
@@ -238,11 +299,13 @@ class HeatEquationModel:
             params[:, 0] = diffusion coefficient
             params[:, 1] = initial condition amplitude
             params[:, 2] = initial condition width
+            (Use get_pnames() to get these names programmatically)
 
         Returns:
         --------
         numpy.ndarray of shape (n_samples, 5)
             [max, mean, std, integral, center] for each sample
+            (Use get_outnames() to get these names programmatically)
         """
         if params.ndim == 1:
             params = params.reshape(1, -1)
@@ -263,6 +326,26 @@ class HeatEquationModel:
             )
 
         return outputs
+
+    def get_pnames(self):
+        """
+        Get parameter names for the heat equation model.
+
+        Returns:
+        --------
+        list : Parameter names corresponding to the input dimensions
+        """
+        return ["diffusion coefficient", "initial condition amplitude", "initial condition width"]
+
+    def get_outnames(self):
+        """
+        Get output names for the heat equation model.
+
+        Returns:
+        --------
+        list : Output names corresponding to the computed quantities
+        """
+        return ["max", "mean", "std", "integral", "center"]
 
 class IshigamiSurrogate:
     """Black box model that might be a surrogate for Ishigami."""
@@ -306,8 +389,15 @@ if __name__ == "__main__":
     # Initialize AMReX
     amr.initialize([])
 
-    # Example usage
-    model = HeatEquationModel(n_cell=32, nsteps=100)
+    # Create model using ParmParse to read from inputs file
+    model = HeatEquationModel(use_parmparse=True)
+
+    print(f"Heat equation model initialized with:")
+    print(f"  n_cell = {model.n_cell}")
+    print(f"  max_grid_size = {model.max_grid_size}")
+    print(f"  nsteps = {model.nsteps}")
+    print(f"  plot_int = {model.plot_int}")
+    print(f"  dt = {model.dt}")
 
     # Test with random parameters
     test_params = np.array([
@@ -316,7 +406,7 @@ if __name__ == "__main__":
         [0.5, 2.0, 0.005]   # lower diffusion, higher amplitude, narrower
     ])
 
-    print("Running heat equation with parameters:")
+    print("\nRunning heat equation with parameters:")
     print("  [diffusion, amplitude, width]")
     print(test_params)
 
