@@ -16,9 +16,13 @@ Tutorial: Heat Equation - Python Driver
      - Understand the function refactoring pattern
 
 
-This tutorial demonstrates the minimal setup needed to create a Python interface
-for AMReX C++ simulation codes. The focus is on a single, clean interface that
-allows you to run simulations from Python and access results directly.
+This tutorial demonstrates two complementary approaches for creating Python interfaces
+to AMReX C++ simulation codes:
+
+- **Case-1**: Minimal pybind11 interface with one-line simulation execution
+- **Case-2**: Pure Python approach using pyamrex MultiFabs directly
+
+Both approaches can handle complex simulations and MultiFab data structures.
 
 The One-Line Interface
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -71,36 +75,64 @@ This pattern allows the same simulation code to be used from:
 - **Command line**: ``./HeatEquation_PythonDriver inputs``
 - **Python**: ``amrex_heat.run_simulation(["./HeatEquation_PythonDriver", "inputs"])``
 
-Building the Project
-~~~~~~~~~~~~~~~~~~~~
+Two Implementation Approaches
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Navigate to the directory :code:`amrex-tutorials/GuidedTutorials/HeatEquation_PythonDriver/`
-and build the project:
+Case-1: Minimal pybind11 Interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Location: :code:`amrex-tutorials/GuidedTutorials/HeatEquation_PythonDriver/Case-1/`
+
+This approach creates C++ bindings using pybind11 for direct simulation execution:
 
 .. code-block:: bash
 
-   mkdir build
-   cd build
+   cd Case-1
+   mkdir build && cd build
    cmake ..
    cmake --build . -j4
 
-This will create both:
-
+Creates both:
 - ``HeatEquation_PythonDriver`` - C++ executable
 - ``amrex_heat.cpython-*.so`` - Python module
 
-Required Files
-~~~~~~~~~~~~~~
+.. note::
+   The GNUmakefile in Case-1 is experimental and under development as an alternative build system.
 
-The ``HeatEquation_PythonDriver`` directory contains these essential files:
+Case-2: Pure Python with pyamrex
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Location: :code:`amrex-tutorials/GuidedTutorials/HeatEquation_PythonDriver/Case-2/`
+
+This approach uses pure Python with pyamrex to access MultiFabs and AMReX functionality directly:
+
+.. code-block:: bash
+
+   cd Case-2
+   python HeatEquationModel.py
+
+Case-1 Files (pybind11 Approach)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``Case-1`` directory contains:
 
 - ``main.cpp`` - Heat equation solver with ``heat_equation_main()`` function
 - ``bindings.cpp`` - Minimal pybind11 interface exposing the one-liner
 - ``CMakeLists.txt`` - Build configuration with pybind11 support
+- ``GNUmakefile`` - Experimental GNU Make build system (under development)
 - ``pybind11.cmake`` - Pybind11 infrastructure (copied from pyamrex)
 - ``inputs`` - Simulation parameters (``n_cell``, ``dt``, etc.)
 - ``test.py`` - Example Python usage script
 - ``README.md`` - Documentation and usage instructions
+
+Case-2 Files (Pure Python Approach)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``Case-2`` directory contains:
+
+- ``HeatEquationModel.py`` - Pure Python implementation using pyamrex MultiFabs
+- ``inputs`` - Simulation parameters
+- ``README.md`` - Documentation for the pure Python approach
 
 Implementation Details
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -202,29 +234,34 @@ pybind11 infrastructure without requiring a separate pyamrex installation.
 Running the Examples
 ~~~~~~~~~~~~~~~~~~~~
 
-C++ Executable
-^^^^^^^^^^^^^^
+Case-1: pybind11 Interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Test the traditional C++ interface:
+**C++ Executable:**
 
 .. code-block:: bash
 
-   cd build
+   cd Case-1/build
    ./HeatEquation_PythonDriver inputs
 
-This runs the simulation and prints progress to the terminal.
-
-Python Interface
-^^^^^^^^^^^^^^^^
-
-Test the new Python interface:
+**Python Interface:**
 
 .. code-block:: bash
 
-   cd build
+   cd Case-1/build
    python ../test.py
 
-The Python script demonstrates accessing simulation results:
+Case-2: Pure Python with pyamrex
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Pure Python Execution:**
+
+.. code-block:: bash
+
+   cd Case-2
+   python HeatEquationModel.py
+
+The Case-1 Python script demonstrates accessing simulation results:
 
 .. code-block:: python
 
@@ -259,62 +296,82 @@ Expected output:
 
    ✓ Simulation completed successfully!
 
-Adapting This Pattern to Your Code
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Choosing the Right Approach
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To apply this pattern to your own AMReX simulation, follow these steps:
+**Use Case-1 (pybind11) when:**
+- You want to create custom bindings for existing C++ code
+- You need a one-line interface wrapping complex C++ simulation logic
+- You want both command-line and Python interfaces from the same codebase
+- You prefer minimal changes to existing C++ code
 
-1. **Choose your output data**: Decide what simulation results to return (max values, final state, convergence info, etc.) *[Details to be added]*
+**Use Case-2 (Pure Python with pyamrex) when:**
+- You want to write simulation logic directly in Python
+- You prefer leveraging the full pyamrex ecosystem
+- You want object-oriented simulation management
+- You need rapid prototyping and development
 
-2. **Choose return format**: Select struct, dictionary, or numpy array based on your Python workflow needs *[Details to be added]*
+Adapting These Patterns
+^^^^^^^^^^^^^^^^^^^^^^^
 
-3. **Create the pybind11 module**: Write ``bindings.cpp`` that exposes your chosen interface
+**For Case-1 (pybind11 approach):**
 
-4. **Wrap existing main**: Refactor your ``main()`` function into a reusable function like ``simulation_main()`` or ``your_code_main()``
+1. **Refactor main()**: Extract simulation logic into reusable function
+2. **Design result structure**: Choose what data to return to Python
+3. **Create bindings**: Write ``bindings.cpp`` for your interface
+4. **Update build**: Add pybind11 support to CMakeLists.txt
 
-5. **Create Python test**: Write a test script to exercise the new interface *[More guidance to be added]*
+**For Case-2 (Pure Python approach):**
 
-6. **Update CMake**: Add pybind11 library target and include ``pybind11.cmake``
+1. **Design class interface**: Define methods for initialization, execution, results
+2. **Use pyamrex directly**: Leverage MultiFabs and AMReX functionality
+3. **Implement simulation logic**: Write algorithm using pyamrex primitives
+4. **Add data management**: Handle input/output and state management
 
-This systematic approach ensures you maintain your existing C++ code while adding clean Python access.
+Benefits Comparison
+~~~~~~~~~~~~~~~~~~~
 
-Benefits of This Approach
-~~~~~~~~~~~~~~~~~~~~~~~~~
+**Case-1 (pybind11) Benefits:**
 
-**Simplicity**
-^^^^^^^^^^^^^^
-- Only ~50 lines of additional code
-- Easy to understand and modify
-- Minimal dependencies
+- **Minimal C++ changes**: Preserves existing simulation logic
+- **Performance**: Direct C++ calls with no overhead
+- **Dual interface**: Same code for command line and Python
+- **Integration**: Works with existing build systems
 
-**Performance**
-^^^^^^^^^^^^^^^
-- No subprocess overhead
-- Direct function calls
-- Same performance as C++ executable
+**Case-2 (Pure Python) Benefits:**
 
-**Flexibility**
-^^^^^^^^^^^^^^^
-- Same code for command line and Python
-- Easy to extend with more return data
-- Foundation for complex workflows
+- **Development speed**: Rapid iteration and testing
+- **Ecosystem access**: Full pyamrex functionality available
+- **Readability**: Clear Python simulation logic
+- **Flexibility**: Easy to modify and extend algorithms
 
-**Integration**
-^^^^^^^^^^^^^^^
-- Works with existing build systems
-- Compatible with pyamrex infrastructure
-- Follows established patterns from WarpX/Nyx
+**Both approaches:**
 
-Use Cases
-~~~~~~~~~
+- Support complex MultiFab operations
+- Enable sophisticated simulation workflows
+- Integrate well with scientific Python ecosystem
+- Provide foundation for advanced features
 
-This pattern is ideal for:
+Use Cases for Each Approach
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Parameter sweeps**: Run multiple simulations with different inputs
-- **Optimization workflows**: Use simulation results in optimization loops
-- **Data analysis pipelines**: Process simulation outputs immediately
-- **Jupyter notebooks**: Interactive simulation and visualization
-- **Machine learning**: Generate training data or run inference
+**Case-1 (pybind11) is ideal for:**
+- **Wrapping existing C++ codes**: Minimal changes to proven simulation codes
+- **Performance-critical workflows**: Direct C++ execution with minimal overhead
+- **One-line interfaces**: Simple Python access to complex simulations
+- **Hybrid development**: Teams with both C++ and Python expertise
+
+**Case-2 (Pure Python with pyamrex) is ideal for:**
+- **Rapid prototyping**: Quick iteration on simulation algorithms
+- **Educational purposes**: Clear, readable simulation logic
+- **Python-first development**: Teams primarily working in Python
+- **Leveraging pyamrex ecosystem**: Using existing pyamrex tools and patterns
+
+**Both approaches support:**
+- Parameter sweeps and optimization workflows
+- Jupyter notebooks and interactive visualization
+- Complex MultiFab operations and data analysis
+- Machine learning and data science pipelines
 
 Next Steps
 ~~~~~~~~~~
