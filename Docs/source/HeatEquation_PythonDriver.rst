@@ -259,19 +259,24 @@ Expected output:
 
    ✓ Simulation completed successfully!
 
-Comparison with Full Implementation
+Adapting This Pattern to Your Code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This minimal example focuses on the core one-line interface. The full
-:ref:`guided_heat_python_interface` tutorial adds:
+To apply this pattern to your own AMReX simulation, follow these steps:
 
-- Callback system for progress monitoring
-- Access to simulation data during execution
-- More complex return structures
-- Real-time interaction capabilities
+1. **Choose your output data**: Decide what simulation results to return (max values, final state, convergence info, etc.)
 
-The minimal approach shown here provides the foundation that can be extended
-as needed for specific applications.
+2. **Choose return format**: Select struct, dictionary, or numpy array based on your Python workflow needs
+
+3. **Create the pybind11 module**: Write ``bindings.cpp`` that exposes your chosen interface
+
+4. **Wrap existing main**: Refactor your ``main()`` function into a reusable function like ``simulation_main()`` or ``your_code_main()``
+
+5. **Create Python test**: Write a test script to exercise the new interface
+
+6. **Update CMake**: Add pybind11 library target and include ``pybind11.cmake``
+
+This systematic approach ensures you maintain your existing C++ code while adding clean Python access.
 
 Benefits of This Approach
 ~~~~~~~~~~~~~~~~~~~~~~~~~
