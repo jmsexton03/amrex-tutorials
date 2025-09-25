@@ -347,43 +347,6 @@ class HeatEquationModel:
         """
         return ["max", "mean", "std", "integral", "center"]
 
-class IshigamiSurrogate:
-    """Black box model that might be a surrogate for Ishigami."""
-
-    def __call__(self, params):
-        """
-        Run equations for each parameter set.
-
-        Parameters:
-        -----------
-        params : numpy.ndarray of shape (n_samples, 3)
-            params[:, 0] = x1
-            params[:, 1] = x2
-            params[:, 2] = x3
-
-        Returns:
-        --------
-        numpy.ndarray of shape (n_samples, 5) for each sample
-        """
-        if params.ndim == 1:
-            params = params.reshape(1, -1)
-
-        n_samples = params.shape[0]
-        outputs = np.zeros((n_samples, 5))
-
-        for i in range(n_samples):
-            x1 = params[i, 0]
-            x2 = params[i, 1]
-            x3 = params[i, 2]
-
-            outputs[i, 0] = np.exp(x1)
-            outputs[i, 1] = x3 * np.log(x1**2) + x1 + (x2**2) * (1 - np.exp(-x3**2))
-            outputs[i, 2] = x1 + x3**2
-            outputs[i, 3] = x2 + x3
-            outputs[i, 4] = x1 * x3
-
-        return outputs
-
 if __name__ == "__main__":
 
     # Initialize AMReX
