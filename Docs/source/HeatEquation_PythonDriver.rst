@@ -264,15 +264,15 @@ Adapting This Pattern to Your Code
 
 To apply this pattern to your own AMReX simulation, follow these steps:
 
-1. **Choose your output data**: Decide what simulation results to return (max values, final state, convergence info, etc.)
+1. **Choose your output data**: Decide what simulation results to return (max values, final state, convergence info, etc.) *[Details to be added]*
 
-2. **Choose return format**: Select struct, dictionary, or numpy array based on your Python workflow needs
+2. **Choose return format**: Select struct, dictionary, or numpy array based on your Python workflow needs *[Details to be added]*
 
 3. **Create the pybind11 module**: Write ``bindings.cpp`` that exposes your chosen interface
 
 4. **Wrap existing main**: Refactor your ``main()`` function into a reusable function like ``simulation_main()`` or ``your_code_main()``
 
-5. **Create Python test**: Write a test script to exercise the new interface
+5. **Create Python test**: Write a test script to exercise the new interface *[More guidance to be added]*
 
 6. **Update CMake**: Add pybind11 library target and include ``pybind11.cmake``
 
