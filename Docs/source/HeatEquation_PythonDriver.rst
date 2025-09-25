@@ -134,8 +134,8 @@ The ``Case-2`` directory contains:
 - ``inputs`` - Simulation parameters
 - ``README.md`` - Documentation for the pure Python approach
 
-Implementation Details
-~~~~~~~~~~~~~~~~~~~~~~
+Case-1 Implementation Details
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Result Structure
 ^^^^^^^^^^^^^^^^
@@ -154,8 +154,8 @@ The simulation returns a simple struct with essential information:
 This struct is automatically exposed to Python through pybind11, allowing direct
 access to all fields.
 
-Minimal Python Bindings
-^^^^^^^^^^^^^^^^^^^^^^^^
+   Minimal Python Bindings
+   ++++++++++++++++++++++++
 
 The Python interface is implemented with minimal pybind11 code in ``bindings.cpp``.
 The key components are:
@@ -207,8 +207,8 @@ The key components are:
 The argument conversion ensures proper lifetime management of the C++ strings and
 null-terminates the argument array as expected by ``argc/argv`` conventions.
 
-CMake Integration
-^^^^^^^^^^^^^^^^^
+   CMake Integration
+   +++++++++++++++++
 
 The ``CMakeLists.txt`` integrates pybind11 using the pyamrex infrastructure. The key
 elements are the pybind11 integration and building both targets from the same source:
@@ -295,6 +295,26 @@ Expected output:
      Max temperature: 1.089070
 
    ✓ Simulation completed successfully!
+
+Case-2 Example Output
+^^^^^^^^^^^^^^^^^^^^^
+
+The pure Python approach provides object-oriented access:
+
+.. code-block:: python
+
+   import numpy as np
+   from HeatEquationModel import HeatEquationModel
+
+   # Create model using inputs file
+   model = HeatEquationModel(use_parmparse=True)
+
+   # Run with parameter array [diffusion_coeff, init_amplitude, init_width]
+   params = np.array([1.0, 1.0, 0.01])
+   results = model(params)
+
+   print(f"Results: {results}")
+   # Output: [max_value, mean_value, std_dev, total_heat, center_value]
 
 Choosing the Right Approach
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
