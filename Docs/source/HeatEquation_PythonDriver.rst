@@ -27,53 +27,71 @@ Both approaches can handle complex simulations and MultiFab data structures.
 The One-Line Interface
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The goal is to enable this simple Python usage pattern:
+The goal is to enable simple Python usage patterns that work across different simulation types:
+
+**Case-1 Pattern (pybind11 C++ interface):**
 
 .. code-block:: python
 
-   import amrex_heat
+   import amrex_sim
 
    # One-line simulation execution with structured results
-   result = amrex_heat.run_simulation(["./HeatEquation_PythonDriver", "inputs"])
+   result = amrex_sim.run_simulation(["./YourSimulation", "inputs"])
 
-   print(f"Max temperature: {result.max_temperature}")
+   print(f"Max value: {result.max_value}")
    print(f"Final time: {result.final_time}")
    print(f"Success: {result.success}")
 
-This approach provides direct access to simulation results without subprocess overhead
+**Case-2 Pattern (Pure Python with pyamrex):**
+
+.. code-block:: python
+
+   from YourModel import SimulationModel
+
+   # One-line execution with parameter arrays
+   model = SimulationModel(use_parmparse=True)
+   results = model(params)  # Returns numpy array of results
+
+   print(f"Results: {results}")  # [max, mean, std, integral, center]
+
+Both approaches provide direct access to simulation results without subprocess overhead
 or complex callback systems.
 
 Key Architecture Pattern
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The essential insight is to refactor the C++ ``main()`` function into a reusable
-function that can be called from both the command line and Python:
+Both approaches demonstrate the core principle of creating **simplified interfaces** to complex AMReX simulations. The key insight is to transform existing simulation logic into easily callable functions with structured return values:
+
+**Case-1 Approach (C++ Refactoring):**
+Refactor the C++ ``main()`` function into a reusable function that can be called from both command line and Python:
 
 .. code-block:: cpp
 
    // Reusable simulation function
-   SimulationResult heat_equation_main(int argc, char* argv[]) {
+   SimulationResult simulation_main(int argc, char* argv[]) {
        amrex::Initialize(argc, argv);
        {
            // All simulation logic here
            // ...
-           result.max_temperature = phi_new.max(0);
+           result.max_value = multifab.max(0);
            result.success = true;
        }
        amrex::Finalize();
        return result;
    }
 
-   // C++ entry point
-   int main(int argc, char* argv[]) {
-       heat_equation_main(argc, argv);
-       return 0;
-   }
+**Case-2 Approach (Python Function Design):**
+Create a callable class or function that encapsulates simulation parameters and execution:
 
-This pattern allows the same simulation code to be used from:
+.. code-block:: python
 
-- **Command line**: ``./HeatEquation_PythonDriver inputs``
-- **Python**: ``amrex_heat.run_simulation(["./HeatEquation_PythonDriver", "inputs"])``
+   class SimulationModel:
+       def __call__(self, params):
+           # All simulation logic using pyamrex
+           # ...
+           return np.array([max_val, mean_val, std_val, integral, center_val])
+
+Both patterns enable the same core benefit: **one-line simulation execution** with structured results, regardless of whether the underlying implementation uses C++ bindings or pure Python.
 
 Two Implementation Approaches
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
