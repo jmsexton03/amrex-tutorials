@@ -321,6 +321,33 @@ This minimal Python interface provides the foundation for more advanced features
 3. **Progress monitoring**: Add callback system for real-time updates
 4. **Full pyamrex integration**: Access MultiFab data structures directly
 5. **Workflow automation**: Build complex simulation pipelines
+6. **Generic naming**: Replace heat equation-specific names (``amrex_heat``, ``max_temperature``) with generic equivalents (``amrex_sim``, ``max_value``) for reusability across different simulation types
+7. **Numpy-compatible results**: Add options to return data as dictionaries, numpy arrays, or other formats that integrate well with the scientific Python ecosystem
+
+Potential improvements for generic usage:
+
+.. code-block:: cpp
+
+   // Generic module and function names
+   PYBIND11_MODULE(amrex_sim, m) {
+       // Option 1: Return as dictionary for numpy compatibility
+       m.def("run_dict", [](py::list args) {
+           auto result = simulation_main(argc, argv);
+           py::dict d;
+           d["success"] = result.success;
+           d["max_value"] = result.max_value;  // Generic field name
+           d["final_time"] = result.final_time;
+           return d;
+       });
+
+       // Option 2: Return numerical data as numpy array
+       m.def("run_array", [](py::list args) {
+           auto result = simulation_main(argc, argv);
+           py::array_t<double> data = py::array_t<double>(3);
+           // Fill array with [final_step, final_time, max_value]
+           return py::make_tuple(result.success, data);
+       });
+   }
 
 The key insight is that this simple pattern scales naturally to support more
 complex use cases while maintaining the clean one-line interface.
