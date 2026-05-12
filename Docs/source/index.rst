@@ -113,14 +113,27 @@ sorted by the following categories:
 
 .. _`SENSEI`: SENSEI_Tutorial.html
 
+|
+|
 
+AI-Assisted Workflows
+---------------------
 
+Learn how to build and use an evidence-disciplined Large Language Model (LLM) assistant to help understand AMReX fundamentals, debug tutorials, and explore downstream applications.
+
+For more advanced automated orchestration, see the `amrex-agent <https://github.com/AMReX-Codes/amrex-agent>`_ repository.
+
+.. toctree::
+   :maxdepth: 1
+
+   Building an AMReX Knowledge Assistant <AI_Assistant_Workflow>
 
 |
 |
 
 Additional Questions and Help
 -----------------------------
+
 
 Didn't find what you were looking for? Have questions we didn't answer?
 Please let us know how we can improve by posting on `AMReX's GitHub Discussions`_.
