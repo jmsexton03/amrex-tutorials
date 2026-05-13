@@ -152,9 +152,26 @@ Prompt References
    * - ERF Generation Prompt
      - `View <https://gemini.google.com/share/7d1585e7b9af>`_
      - :download:`Prompt <_static/ERF_Expert_GemReport_Layer3_prompt.md>`
-     - ``N/A``
+     - :download:`Report <_static/ERF_Expert_GemReport_Layer3.md>`
    * - ERF Application Profile
      - `View <https://gemini.google.com/share/14f97271bb23>`_
      - :download:`Prompt <_static/Generic_Layer3_prompt_B_2wordsreplaceERF.md>`
      - :download:`Report <_static/ApplicationProfile_GemReport_ERF.md>`
+
+Instruction Prompts
+-------------------
+
+These are the final "Persona Blueprints" used to initialize the assistant.
+
+.. list-table::
+   :widths: 30 70
+   :header-rows: 1
+
+   * - Assistant
+     - Instruction Prompt
+   * - Generic AMReX Expert
+     - :download:`Download <_static/AMReX_Expert_GemReport_Layer1-2_instruction.md>`
+   * - ERF Specialized Expert
+     - :download:`Download <_static/ERF_Expert_GemReport_Layer3_instruction.md>`
+
 

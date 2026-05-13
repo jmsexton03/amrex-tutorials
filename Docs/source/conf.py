@@ -42,7 +42,8 @@ extensions = ['sphinx.ext.mathjax',
               'sphinx_design',
               'sphinx_copybutton',
               'sphinx.ext.intersphinx',
-              'sphinx_rtd_theme']
+              'sphinx_rtd_theme',
+              'sphinx_tabs.tabs']
 
 intersphinx_mapping = {
     'amrex_docs': ('https://amrex-codes.github.io/amrex/docs_html/', None)
