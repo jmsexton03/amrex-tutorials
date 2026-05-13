@@ -20,7 +20,7 @@ Standard Large Language Models (LLMs) often hallucinate application-specific phy
    **Extend to your application specifics:** See below — or jump straight to other solutions like using Context7 as described in the `WarpX LLM guide <https://warpx.readthedocs.io/en/latest/developers/llm_assisted_warpx_development.html>`_ or trying out the `ERF Specialized Assistant <https://gemini.google.com/gem/1CYi43osCZtA-pqmuBOyw6AZQJpkQBHox?usp=sharing>`_ or
    `ERF Agentic Workflow <https://erf.readthedocs.io/en/latest/AgenticWorkflow.html>`_ if you use those codes.
 
-.. dropdown:: Extending to a specific application (Layer 3)
+   **Extending to a specific application (Layer 3):**
 
    Download :download:`Generic Layer 3 Prompt B <_static/Generic_Layer3_prompt_B.md>`, then choose your approach:
 
@@ -57,12 +57,12 @@ Standard Large Language Models (LLMs) often hallucinate application-specific phy
 
 
 Detailed Build Explanation
-==========================
+--------------------------
 
 If you are interested in reproducing the research step or want to understand how the assistant's boundaries are constructed, the following sections detail the complete architecture.
 
 The Knowledge Layers (Deep Research)
----------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To make the assistant reliable, it requires a deep research context file that acts as the **ground truth** for how AMReX operates—independent of any particular physics application.
 
@@ -83,7 +83,7 @@ If you want to run the research step yourself, you can download the original pro
 
 
 The Persona Blueprint (Instruction Boundary)
----------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After providing the context document to the LLM, you must initialize the model with a specific persona that enforces the evidence boundary. This prevents the LLM from making assumptions when it lacks context.
 
@@ -98,7 +98,7 @@ Alternatively, copy and paste the complete instruction set below into your LLM's
 
 
 Extending to Specific Applications (Layer 3)
--------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once the base assistant is tuned for pure AMReX fundamentals (Layers 1 and 2), you can extend it to analyze large, domain-specific scientific applications built on top of AMReX. We call this the **“Layer 3 Application Profile.”**
 
@@ -106,7 +106,7 @@ Because LLMs frequently hallucinate application-specific parameter keys, you mus
 
 
 Generating a Custom Layer 3 Profile
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""
 
 To create a profile for *any* AMReX-based application (such as Pele, WarpX, or Castro), use the generic Layer 3 generation prompts. These prompts force the LLM to read your application's README, inputs, or documentation snippets, then summarize them into a strict ruleset.
 
@@ -126,7 +126,7 @@ Depending on your preferred LLM, download the appropriately optimized prompt:
 
 
 Example: The ERF Application
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""
 
 If you are working with the **Energy Research and Forecasting (ERF)** model, we have already executed the Layer 3 generation prompt and created a specialized profile.
 
@@ -137,7 +137,7 @@ You can download the ERF-specific assets here *(Generated via Gemini 3.1 Pro wit
 * :download:`ERF Layer 3 Instruction Prompt <_static/ERF_Expert_GemReport_Layer3_instruction.md>`
 
 Initializing a Layer 3 Assistant
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""""""
 
 To build your application-specific agent (e.g., in a Custom GPT/Gem builder):
 
@@ -148,7 +148,7 @@ This multi-layered approach guarantees the AI understands both the foundation of
 
 
 Prompt References & Instructions
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following tables consolidate all prompts, reports, and instructions referenced throughout this guide for easy access.
 
