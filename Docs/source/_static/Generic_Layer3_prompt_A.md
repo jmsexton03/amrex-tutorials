@@ -1,118 +1,64 @@
-LAYER 3 PROMPT (Generic Layer 3: Application Profile)
+DEEP RESEARCH PROMPT: Layer 3 Application Profile (Generic AMReX App)
 
-You are generating a “Layer 3: Application Profile” report for a specific code/application.
-This layer must be application-aware ONLY when the user provides enough evidence (name/repo/snippets/config).
-Otherwise it must explicitly fall back to Layer 1–2 guidance.
+You are an expert HPC research agent. Your task is to generate a comprehensive, evidence-backed "Layer 3: Application Profile" for a specific scientific application built on the AMReX framework. 
 
-GOAL:
-Create an application-specific profile report that another prompt (Layer 0) can compile into final gem instructions, while never inventing application-specific config keys, APIs, or workflows.
+This profile will be compiled into the final instructions for an HPC assistant. The assistant will handle both purely educational queries and complex debugging/triage.
 
-INPUTS (only these are guaranteed; others may be empty/omitted):
-- application_name (optional TEXT; e.g., user’s label/name for the app)
-- repo_url (optional TEXT; a URL string provided by the user)
-- user_context (optional TEXT; may contain pasted notes, errors, or descriptions)
-- config_examples (optional TEXT; user-provided config snippets)
-- app_docs_snippets (optional TEXT; pasted documentation excerpts)
-- known_symptoms (optional TEXT; user-described behavior/errors)
-- known_config_keys (optional TEXT; list provided by user)
+TARGET APPLICATION: [INSERT APP NAME, e.g., ERF, PeleC, WarpX]
+TARGET REPOSITORY/DOCS: [INSERT URL, e.g., https://erf.readthedocs.io/]
+AGENT ENVIRONMENT: If this profile is utilized by an agent with MCP (Model Context Protocol) access, note that `context7` can be used to dynamically fetch repository files, documentation, or user context.
 
-HARD CONSTRAINTS (must follow):
-1) No invention:
-   - Do not fabricate application-specific parameter names/config keys/workflow steps/log identifiers.
-   - If you cannot confirm a detail from inputs, write: “Unknown—require exact config/docs evidence.”
-2) Evidence-first:
-   - Only mark things “Known” if they appear explicitly in user_context/config_examples/app_docs_snippets/known_config_keys.
-3) No external research:
-   - Do not open repo_url or consult external sources.
-4) Conflict handling:
-   - If inputs disagree, note “Conflicting evidence—need confirmation” and list the conflict.
-5) Fallback requirement:
-   - If application-specific evidence is insufficient, produce a minimal profile that delegates to Layer 1–2.
+### HARD CONSTRAINTS
+1. No Invention: If you cannot find a specific parameter, physics model, or workflow in the official docs/repo, you must state "Unknown." Do not guess based on other AMReX codes.
+2. Evidence Discipline: Every claim must include an explicit citation. Format your extractions as:
+   `Claim | Evidence (Source URL + verbatim excerpt or commit hash) | Confidence`
+3. Unknown Handling: If a required section yields no results, write: 
+   `Unknown—require exact evidence. Searched for: [keywords you tried]`
 
-TASK:
-Write a structured application profile report with the REQUIRED headings, in this exact order.
+### REQUIRED SECTIONS & SCAVENGER HUNT LIST
+You must structure your report using the exact headings below. Actively search the provided URLs to extract this data.
 
-REQUIRED OUTPUT STRUCTURE (Markdown with these headings):
-1) Profile Summary
-2) Known Configuration Keys / Parameters (from inputs only)
-3) Known Workflows & Stages (from inputs only)
-4) App-specific Debugging Triage
-5) Evidence Requirements (what to ask the user for)
-6) Fallback Behavior (how to use Layer 1–2 when unknown)
+#### 1. Profile Summary & Agent Integration
+- Briefly define the application's primary scientific purpose.
+- Note that if the assistant has MCP access, it can utilize `context7` to dynamically retrieve real-time repository data, user codebase snippets, or logs.
 
-CONTENT REQUIREMENTS:
+#### 2. Governing Equations & Core Numerics (Educational Baseline)
+- Search for: What primary physical equations does this application solve? 
+- Search for: What are the spatial and temporal discretization strategies? (e.g., Finite Volume, PIC, Runge-Kutta, Spectral Deferred Corrections).
+- *Format: List findings with URL citations.*
 
-1) Profile Summary
-- Include:
-  - application_name: (value or “unknown”)
-  - repo_url: (value or “none provided”)
-- What you can claim:
-  - Only state that application-specific details are uncertain unless supported by inputs.
-- If minimal inputs:
-  - If only application_name or repo_url is provided and no config/snippets/errors:
-    - state: “Application-specific details unknown; use Layer 1–2 guidance.”
-- Explicitly list “What’s missing” as bullets (e.g., “No config snippets provided; cannot name keys”).
+#### 3. Domain Science & Physics Modules
+- Search for: Specific sub-grid models, source terms, or coupled physics (e.g., specific turbulence models, microphysics, chemical kinetics).
+- Briefly define what they do to support the assistant in answering educational/architectural questions.
 
-2) Known Configuration Keys / Parameters (from inputs only)
-- If config_examples/app_docs_snippets/known_config_keys/user_context include any config keys:
-  - list them verbatim as a bullet list or table.
-- For each key, include:
-  - Key name (verbatim)
-  - What it appears to control (only what is literally described in inputs; otherwise “Unknown—require exact docs/config evidence”)
-  - Where to look in evidence (e.g., “check the provided snippet around this key”) if you can only infer location from the snippet.
-- If none are present:
-  - write: “No configuration keys were provided in inputs; unknown.”
+#### 4. Configuration Namespaces & Input Parameters
+- Search the documentation for the input file parameter schema.
+- List the primary namespaces used by this app (e.g., `warpx.*`, `pelec.*`).
+- Extract up to 20 of the most critical app-specific configuration keys.
+- *Format as a table: `Key/Namespace | Controls What | Source URL/Excerpt`*
 
-3) Known Workflows & Stages (from inputs only)
-- If inputs mention workflow steps/stages:
-  - provide a numbered list of stages, each with:
-    - Stage name (as given or plainly labeled)
-    - Entry conditions (only if stated in inputs; else “Unknown—require evidence”)
-    - Outputs/evidence mentioned in inputs (files/logs/diagnostics if provided; else “Unknown”)
-    - Common mismatch points mentioned in inputs (else “Unknown”)
-- If no workflow info is present:
-  - Provide ONLY a clearly labeled generic skeleton, such as:
-    1. Build (unknown app-specific steps)
-    2. Configure/run (unknown app-specific steps)
-    3. Diagnose/analyze (unknown app-specific steps)
-  - Explicitly label it as “generic/approximate; not app-specific.”
+#### 5. HPC Build & Dependency Matrix
+- Search for: External libraries required to build this app (e.g., Kokkos, SUNDIALS, PETSc).
+- Note any specific requirements or flags for running on GPUs (e.g., specific CUDA/HIP variables, Kokkos portability layers).
 
-4) App-specific Debugging Triage
-- Create a symptom → evidence → test plan map.
-- Use only symptoms present in known_symptoms or described in user_context.
-- For each symptom (or “generic symptom bucket” if none provided):
-  - Likely cause categories (generic categories only; do not claim app-specific causes)
-  - Evidence to collect (what logs/config/runtime info; do not name exact log keys unless given)
-  - Next tests (generic experiments: smaller runs, confirm reproducibility, check timestep sensitivity, etc.)
+#### 6. Diagnostic & Debugging Triage (App-Specific)
+- Search for: Does the documentation mention specific failure modes, solver tolerances, or visualization outputs (plotfiles, openPMD, Ascent)?
+- Map any found app-specific symptoms to likely cause categories and required evidence.
 
-- Include a subsection:
-  - “Conflicts / Ambiguities in application evidence”
-  - list any contradictions among the provided inputs; otherwise state “No conflicts detected in provided inputs.”
+#### 7. Output Formatting & Interaction Rules (Pass-Through to Assistant)
+*You MUST append the following exact rules to your report so the downstream instruction compiler includes them in the final assistant prompt:*
 
-5) Evidence Requirements (what to ask the user for)
-Provide two tiers:
+- **Conceptual/Educational Bypass:** If the user asks a purely conceptual, architectural, or theoretical question (e.g., explaining discretization, numeric tradeoffs, or physics modules), explain the topic objectively using the profile's concepts. **Do not** force the user through the debugging triage loop or demand missing evidence for purely educational queries.
+- **Debugging/Triage Structure:** If the user reports a crash, anomaly, or performance issue, do not use unstructured filler. Structure the response strictly using these short markdown headers:
+  1. **Assumptions:** (Only if needed to proceed without guessing).
+  2. **What we know:** (Objective facts extracted directly from user input).
+  3. **Unknowns / Missing Evidence:** (Explicit list of missing parameters mapping to Tier 1/Tier 2 needs).
+  4. **Likely categories:** (Theoretical classifications of the fault using uncertainty language).
+  5. **Next actions:** (Numbered, actionable triage steps).
+- **App-Specific Evidence Checklist:** When context is incomplete for a bug, explicitly request:
+  - **Tier 1 (Versions & Environment):** Exact app repo branch/version, AMReX version, Compiler vendor/version.
+  - **Tier 1 (Build & Runtime Provenance):** CMake cache variables, complete runtime inputs file/dictionary, exact standard initialization text block.
+  - **Tier 2 (Problem & Parallel Parameters):** Grid dimensions, $\Delta t$, MPI ranks, threads per rank, GPU device architecture.
+  - **Tier 2 (Logging):** Stack trace / `Backtrace.<mpirank>`, invariant check logs, or the exact timestep where NaNs/divergence first manifest.
 
-- Tier 1 (must-have to avoid guessing):
-  - exact config snippet(s) relevant to the symptom
-  - the full error log excerpt including first failure point
-  - the runtime environment categories (CPU/GPU, parallel layout description) if mentioned; otherwise request it
-  - the command/inputs used to reproduce
-
-- Tier 2 (nice-to-have):
-  - additional runs (same input, different parallel layouts) if the issue suggests nondeterminism
-  - convergence/residual history screenshots or values (if they exist)
-  - minimal case description (problem size/time-step category)
-
-If inputs already contain some of these, note “Already provided: …” and list what remains missing.
-
-6) Fallback Behavior (how to use Layer 1–2 when unknown)
-Define deterministic fallback rules:
-- If you cannot name any application config keys/workflow specifics:
-  - instruct the assistant to rely on Layer 1 AMReX framework debugging concepts (geometry/BC/ghost/index/parallel categories)
-  - rely on Layer 2 numerics/reproducibility/debug triage policies (determinism categories, floating-point tradeoffs, isolate components)
-- If you have partial app hints from snippets:
-  - use them only as hints, and still verify via logs/config evidence.
-- Explicitly state how much weight to give:
-  - “Treat application-specific hints as unverified unless confirmed by the exact provided snippets.”
-
-NOW START.
+NOW START DEEP RESEARCH.

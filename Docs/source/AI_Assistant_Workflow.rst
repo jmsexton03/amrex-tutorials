@@ -4,6 +4,10 @@ Building an AMReX Knowledge Assistant
 Standard Large Language Models (LLMs) often hallucinate application-specific physics when asked about the AMReX framework. To mitigate this, we employ an "Architecture-First" mental model and a strict "Evidence Discipline" protocol. This ensures the AI assistant prioritizes the framework's fundamental structural mechanics over guessed scientific implementations.
 
 .. note::
+   These examples are currently developmental and subject to change.
+
+
+.. note::
    **Quick Start:** If you use Google Gemini, you can skip the manual setup and directly use the pre-configured agent here: `AMReX Expert Assistant Gem <https://gemini.google.com/gem/1L8shw-xtLVkdkUI4im0NiP7xVaKSHy5d?usp=sharing>`_ or the `ERF Specialized Assistant <https://gemini.google.com/gem/1CYi43osCZtA-pqmuBOyw6AZQJpkQBHox?usp=sharing>`_.
 
 
@@ -117,3 +121,40 @@ To build your application-specific agent (e.g., in the Custom GPT/Gem builder):
 2. **Set Persona:** Paste your Application's Instruction Prompt (e.g., the ERF Layer 3 Instruction) into the Instructions box *instead* of the generic AMReX one.
 
 This multi-layered RAG approach guarantees the AI understands both the foundation of the AMReX framework and the exact boundaries of your specific physics application.
+
+Prompt References
+------------------
+
+.. list-table::
+   :widths: 20 30 30 20
+   :header-rows: 1
+
+   * - Layer/Profile
+     - Interactive View (Sources)
+     - Downloadable Prompt
+     - Downloadable Report
+   * - AMReX Framework Core
+     - `View <https://gemini.google.com/share/0250e6cc7db3>`_
+     - :download:`Prompt <_static/AMReX_Expert_GemReport_Layer1_prompt.md>`
+     - :download:`Report <_static/AMReX_Expert_GemReport_Layer1-2.md>`
+   * - AMReX Framework Core (Alt)
+     - `View <https://gemini.google.com/share/c9f115cb0599>`_
+     - ``N/A``
+     - :download:`Report <_static/AMReX_Expert_GemReport_Layer1-2.md>`
+   * - Portable HPC / Numerics
+     - `View <https://gemini.google.com/share/8539c27d4752>`_
+     - :download:`Prompt <_static/AMReX_Expert_GemReport_Layer2_prompt.md>`
+     - :download:`Report <_static/AMReX_Expert_GemReport_Layer1-2.md>`
+   * - Portable HPC / Numerics (Alt)
+     - `View <https://gemini.google.com/share/c1d72c161e2e>`_
+     - ``N/A``
+     - :download:`Report <_static/AMReX_Expert_GemReport_Layer1-2.md>`
+   * - ERF Generation Prompt
+     - `View <https://gemini.google.com/share/7d1585e7b9af>`_
+     - :download:`Prompt <_static/ERF_Expert_GemReport_Layer3_prompt.md>`
+     - ``N/A``
+   * - ERF Application Profile
+     - `View <https://gemini.google.com/share/14f97271bb23>`_
+     - :download:`Prompt <_static/Generic_Layer3_prompt_B_2wordsreplaceERF.md>`
+     - :download:`Report <_static/ApplicationProfile_GemReport_ERF.md>`
+
